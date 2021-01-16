@@ -1,0 +1,546 @@
+// Truth or False Circuit Game
+// Code by - NITISH GHOSH
+// Finished developing - August 24, 2020
+
+// This program is a simple logic game ideally for people who are learning digital electronics.
+// The players will choose between 4 different digital circuits,
+// and what inputs to enter into the circuit.
+// The goal of each player is to enter the inputs in such a way,
+// that the output of the circuit will result in their corresponding truth value.
+// The player with more points at the end wins the game.
+// Future versions may include different circuits/additional options.
+
+// Circuit 1: A*B+(~C+D)
+// Circuit 2: (~A+~B)*(C*~D))
+// Circuit 3: A XOR B
+// Circuit 4: A XNOR B
+
+char playThisCircuit;		// Holds the number of the circuit to be played
+char circuitInputChoice;	// True or False choice
+int circuitOutput;			// End result of the inputs
+const int NUM_CIRCUITS = 4;
+char usedCircuitNums[NUM_CIRCUITS] = {'0', '0', '0', '0'};		// Will hold the numbers of the circuits that are played
+bool truePlayerFirst = true;		// These 2 variables determine who goes first in a certain round
+bool falsePlayerFirst = false;
+int truePlayerPts;
+int falsePlayerPts;
+bool gameOver = false;		// Becomes true at the end of the void loop function
+
+// Displays game instructions at the beginning of the game
+void introduceGame() {
+  Serial.println("Welcome to the Truth or False circuit game!");
+  Serial.println("In this game, one player will play as the TRUE player,");
+  Serial.println("and the other will play as the FALSE player.");
+  Serial.println("The players will play the 4 circuits, and take turns to enter inputs.");
+  Serial.println("The goal of each player is to make the circuit's output correspond to their logic value.");
+  Serial.println("The green LED will light when the TRUE player wins a circuit,");
+  Serial.println("and the red LED will light when the FALSE player wins a circuit.");
+  Serial.println("Once a circuit has been played, it cannot be picked again.");
+  Serial.println("The player who wins more circuits will win the game!");
+  Serial.println("Circuit 1: A*B+(~C+D)");
+  Serial.println("Circuit 2: (~A+~B)*(C*~D))");
+  Serial.println("Circuit 3: A XOR B");
+  Serial.println("Circuit 4: A XNOR B");
+  Serial.println("Enjoy!");
+  Serial.println();
+}
+
+// Changes who goes first in a round (changes after each round).
+void changeTurn() {
+  if (truePlayerFirst) {
+    truePlayerFirst = false;
+    falsePlayerFirst = true;
+  }
+  else {
+    truePlayerFirst = true;
+    falsePlayerFirst = false;
+  }
+}
+
+// Function to obtain user-input (char only).
+void readFunction(char& readVar) {
+  while (!Serial.available()) {};		// Waits until the user has entered their input
+  if (Serial.available()); {
+    readVar = Serial.read();
+    Serial.print("You entered: ");
+    Serial.println(readVar);
+  }
+}
+
+// Used in the play circuit function to check for values other then 't' or 'f'.
+void checkInvalidCircuitInput(char& readVar) {
+  while (readVar != 't' && readVar != 'f') {
+    Serial.println("Invalid circuit input. Try again.");
+    readFunction(readVar);
+  }
+}
+
+// Determines which circuit to play,
+// plays that circuit, 
+// determines the winner of the round,
+// and adds points to the winning player's score.
+// Will be called four times for each of the four rounds.
+void playCircuit(char circuitNum) {
+  if (truePlayerFirst) {		// TRUE player goes first
+    if (circuitNum == '1') {	// Circuit 1
+      for (int i = 0; i < 4; i++) {		// 4 inputs
+        if ((i % 2) == 0) {		// TRUE player goes on even index turns
+         Serial.print("TRUE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')		// Send input to the corresponding output pin
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+        else {		// FALSE player goes on odd index turns
+         Serial.print("FALSE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+      }
+      circuitOutput = digitalRead(8);		// Determine the circuit's output
+  	  if (circuitOutput == 1) {		// Add point to TRUE player if the output is true
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {		// Add point to FALSE player if the output is false
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {		// Add '1' to next blank element of the array
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] = '1';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+    else if (circuitNum == '2') {		// Same structure as circuitNum == '1' block
+      for (int i = 0; i < 4; i++) {
+        if ((i % 2) == 0) {
+         Serial.print("TRUE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+        else {
+         Serial.print("FALSE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+      }
+      circuitOutput = digitalRead(9);
+  	  if (circuitOutput == 1) {
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] = '2';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+    else if (circuitNum == '3') { // Same structure as circuitNum == '1' block
+      for (int i = 0; i < 2; i++) {
+       if ((i % 2) == 0) {
+        Serial.print("TRUE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+       else {
+        Serial.print("FALSE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+      }
+      circuitOutput = digitalRead(10);
+  	  if (circuitOutput == 1) {
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] = '3';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+    else if (circuitNum == '4') {	// Same structure as circuitNum == '1' block
+     for (int i = 0; i < 2; i++) {
+       if ((i % 2) == 0) {
+        Serial.print("TRUE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+       else {
+        Serial.print("FALSE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+      } 
+      circuitOutput = digitalRead(11);
+  	  if (circuitOutput == 1) {
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] ='4';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+  }
+  else {	// Same structure as truePlayerFirst block but the FALSE and TRUE player prompts are switched
+    if (circuitNum == '1') {
+      for (int i = 0; i < 4; i++) {
+        if ((i % 2) == 0) {
+         Serial.print("FALSE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+        else {
+         Serial.print("TRUE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+      }
+      circuitOutput = digitalRead(8);
+  	  if (circuitOutput == 1) {
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] = '1';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+    else if (circuitNum == '2') {
+      for (int i = 0; i < 4; i++) {
+        if ((i % 2) == 0) {
+         Serial.print("FALSE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+        else {
+         Serial.print("TRUE player enter your choice for input ");
+         Serial.print(i + 1);
+         Serial.println(".");
+         readFunction(circuitInputChoice);
+         checkInvalidCircuitInput(circuitInputChoice);
+         if (circuitInputChoice == 't')
+          digitalWrite(i + 2, HIGH);
+         else
+          digitalWrite(i + 2, LOW);
+      	}
+      }
+      circuitOutput = digitalRead(9);
+  	  if (circuitOutput == 1) {
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] = '2';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+    else if (circuitNum == '3') {
+      for (int i = 0; i < 2; i++) {
+       if ((i % 2) == 0) {
+        Serial.print("FALSE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+       else {
+        Serial.print("TRUE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+      }
+      circuitOutput = digitalRead(10);
+  	  if (circuitOutput == 1) {
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] = '3';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+    else if (circuitNum == '4') {
+     for (int i = 0; i < 2; i++) {
+       if ((i % 2) == 0) {
+        Serial.print("FALSE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+       else {
+        Serial.print("TRUE player enter your choice for input ");
+        Serial.print(i + 1);
+        Serial.println(".");
+        readFunction(circuitInputChoice);
+        checkInvalidCircuitInput(circuitInputChoice);
+        if (circuitInputChoice == 't')
+         digitalWrite(i + 2, HIGH);
+        else
+         digitalWrite(i + 2, LOW);
+      	}
+      } 
+      circuitOutput = digitalRead(11);
+  	  if (circuitOutput == 1) {
+       truePlayerPts++;
+       digitalWrite(A0, HIGH);
+       digitalWrite(A1, LOW);
+       Serial.println("TRUE player won this round!");
+  	  }
+  	  else {
+       falsePlayerPts++;
+       digitalWrite(A0, LOW);
+       digitalWrite(A1, HIGH);
+       Serial.println("FALSE player won this round!");
+  	  }
+  	  Serial.print("TRUE player points: ");
+      Serial.println(truePlayerPts);
+      Serial.print("FALSE player points: ");
+      Serial.println(falsePlayerPts);
+      for (int i = 0; i < NUM_CIRCUITS; i++) {
+        if (usedCircuitNums[i] == '0') {
+          usedCircuitNums[i] ='4';
+          break;
+        }   
+      }
+  	 changeTurn();
+    }
+  }
+}
+
+// Set input and output arduino pins and serial monitor
+void setup() {
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(8, INPUT);
+  pinMode(9, INPUT);
+  pinMode(10, INPUT);
+  pinMode(11, INPUT);
+  Serial.begin(9600);
+}
+
+// Driver which runs the game 
+void loop() {
+  while (!gameOver) {	// Sets to true at the end, thus loop runs only 1 iteration
+    introduceGame();
+    for (int i = 0; i < NUM_CIRCUITS; i++) {	// Run for all 4 circuits
+     if (truePlayerFirst) {		// FALSE player choses circuit here
+  	  Serial.println("FALSE player, choose a circuit.");
+      readFunction(playThisCircuit);
+      while ((playThisCircuit != '1' && playThisCircuit != '2' &&		// Check for invalid circuit inputs
+              playThisCircuit != '3' && playThisCircuit != '4') ||		// or used circuit inputs
+             (playThisCircuit == usedCircuitNums[0] ||
+              playThisCircuit == usedCircuitNums[1] ||
+              playThisCircuit == usedCircuitNums[2] ||
+              playThisCircuit == usedCircuitNums[3] )) {
+        Serial.println("Invalid circuit. Try again.");
+        readFunction(playThisCircuit);
+      }
+      playCircuit(playThisCircuit);
+     }
+     else {		// TRUE player chooses circuit here
+      Serial.println("TRUE player, enter a circuit.");
+      readFunction(playThisCircuit);
+      while ((playThisCircuit != '1' && playThisCircuit != '2' &&
+             playThisCircuit != '3' && playThisCircuit != '4') ||
+             (playThisCircuit == usedCircuitNums[0] ||
+              playThisCircuit == usedCircuitNums[1] ||
+              playThisCircuit == usedCircuitNums[2] ||
+              playThisCircuit == usedCircuitNums[3] )) {
+        Serial.println("Invalid circuit. Try again.");
+        readFunction(playThisCircuit);
+      }
+      playCircuit(playThisCircuit);
+     }  
+    }
+    if (truePlayerPts > falsePlayerPts) 
+      Serial.println("TRUE player won the game!");
+    else if (falsePlayerPts > truePlayerPts)
+      Serial.println("FALSE player won the game!");
+    else
+      Serial.println("The game is a tie!");
+  	gameOver = true;		// End the game
+  	delay(1000); 
+  }
+}
